@@ -42,13 +42,6 @@ func ParseReader(input io.Reader) (*Library, error) {
 
         case xml.StartElement:
 
-            if t.Name.Local == "plist" {
-                /*for _, attr := range t.Attr {
-                    fmt.Printf("%s: %s\n", attr.Name.Local, attr.Value)
-                }*/
-                continue
-            }
-
             if t.Name.Local == "dict" {
                 err = decoder.DecodeElement(lib, &t)
                 if nil != err {
