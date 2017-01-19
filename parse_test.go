@@ -1,4 +1,4 @@
-package ituneslib_test
+package itunes_test
 
 import (
     "testing"
@@ -6,6 +6,13 @@ import (
     "github.com/rydrman/go-itunes-library"
 )
 
-func ParseFileTest(*testing.T) {
-    itunes.ParseFile("~/Downloads/iTunes Music Library.xml")
+func TestParseFile(t *testing.T) {
+
+    _, err := itunes.ParseFile("/home/Downloads/rbottriell/iTunes Music Library.xml")
+    if nil != err {
+        t.Fatal(err)
+    }
+
+    t.Fail()
+
 }

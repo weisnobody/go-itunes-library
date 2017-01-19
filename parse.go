@@ -2,7 +2,8 @@ package itunes
 
 import (
     "encoding/xml"
-    "io/ioutil"
+    "fmt"
+    "io"
     "os"
 )
 
@@ -16,25 +17,53 @@ func ParseFile(filename string) (*Library, error) {
     }
     defer libraryFile.Close()
 
-    bytes, err := ioutil.ReadAll(libraryFile)
-    if err != nil {
-        return nil, err
-    }
-
-    return ParseBytes(bytes)
+    return ParseReader(libraryFile)
 
 }
 
-// ParseBytes parses the given byte slice as an library xml file
-func ParseBytes(bytes []byte) (*Library, error) {
+// ParseReader parses the given readers bytes as an library xml file
+func ParseReader(input io.Reader) (*Library, error) {
 
     lib := &Library{}
 
-    err := xml.Unmarshal(bytes, lib)
-    if nil != err {
-        return nil, err
-    }
+    decoder := xml.NewDecoder(input)
 
-    return lib, nil
+    for {
+        token, err := decoder.Token()
+        if nil != err {
+
+            if err == io.EOF {
+                return nil, ErrInvalidFormat
+            }
+
+            return nil, err
+        }
+
+        switch t := token.(type) {
+
+        case xml.StartElement:
+
+            if t.Name.Local == "plist" {
+                for _, attr := range t.Attr {
+                    fmt.Printf("%s: %s\n", attr.Name.Local, attr.Value)
+                }
+                continue
+            }
+
+            if t.Name.Local == "dict" {
+                err = decoder.DecodeElement(lib, &t)
+                if nil != err {
+                    return nil, err
+                }
+                return lib, nil
+            }
+
+            _ = decoder.Skip()
+
+        default:
+            //fmt.Println(token)
+
+        }
+    }
 
 }

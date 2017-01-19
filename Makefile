@@ -5,6 +5,9 @@ ldflags=\
 	-X main.clientID=$(SPOTIFY_CLIENT_ID) \
 	-X main.clientSecret=$(SPOTIFY_CLIENT_SECRET)
 
+test: build
+	go test
+
 build:
 	go build -a -x -ldflags "$(ldflags)"
 
