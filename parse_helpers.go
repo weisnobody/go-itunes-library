@@ -118,8 +118,7 @@ func resolveKeyOnStruct(item interface{}, key string, decoder *xml.Decoder) erro
         field.Set(reflect.ValueOf(tracks))
 
     default:
-        fmt.Printf("unknown field type for %s\n", key)
-        _ = decoder.Skip()
+        return fmt.Errorf("unknown field type for %s\n", key)
 
     }
 
