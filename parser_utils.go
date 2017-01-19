@@ -78,6 +78,10 @@ func resolveKeyOnStruct(item interface{}, key string, decoder *xml.Decoder) erro
 
     case bool:
         v := token.(xml.StartElement).Name.Local
+        err = decoder.Skip()
+        if nil != err {
+            return err
+        }
         field.SetBool(v == "true")
 
     case time.Time:
@@ -91,7 +95,7 @@ func resolveKeyOnStruct(item interface{}, key string, decoder *xml.Decoder) erro
         }
         field.Set(reflect.ValueOf(t))
 
-    case []Track:
+    case []*Track:
 
         start, err := findNextStartElement(decoder, token)
         if nil != err {
@@ -140,9 +144,11 @@ func findNextStartElement(decoder *xml.Decoder, begin xml.Token) (xml.StartEleme
 
 }
 
-func decodeTracks(decoder *xml.Decoder, start xml.StartElement) ([]Track, error) {
+func decodeTracks(decoder *xml.Decoder, start xml.StartElement) ([]*Track, error) {
 
-    tracks := make([]Track, 0)
+    tracks := make([]*Track, 0)
+
+    fmt.Println("Tracks Starting")
 
     for {
         token, err := decoder.Token()
@@ -155,28 +161,36 @@ func decodeTracks(decoder *xml.Decoder, start xml.StartElement) ([]Track, error)
         case xml.StartElement:
 
             if t.Name.Local == "key" {
+                err := decoder.Skip()
+                if nil != err {
+                    return nil, err
+                }
                 continue
             }
 
             if t.Name.Local == "dict" {
 
-                track := Track{}
-                track.UnmarshalXML(decoder, t)
+                track := &Track{}
+                err := track.UnmarshalXML(decoder, t)
+                if err != nil {
+                    return nil, err
+                }
+
                 tracks = append(tracks, track)
-                fmt.Println(track.Name)
 
             } else {
 
                 return nil, ErrInvalidFormat
-
             }
 
         case xml.EndElement:
             if t == start.End() {
-
                 return tracks, nil
-
             }
+            return nil, ErrInvalidFormat
+
+        case xml.CharData:
+            continue
 
         default:
             return nil, ErrInvalidFormat

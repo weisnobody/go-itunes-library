@@ -14,7 +14,9 @@ type Track struct {
     DiscNumber          int
     DiscCount           int
     TrackNumber         int
+    TrackCount          int
     Year                int
+    ReleaseDate         time.Time
     DateModified        time.Time
     DateAdded           time.Time
     BitRate             int
@@ -25,12 +27,15 @@ type Track struct {
     SkipCount           int
     SkipDate            time.Time
     Rating              int
+    RatingComputed      bool
     AlbumRating         int
     AlbumRatingComputed bool
+    ArtworkCount        int
     PersistentID        string
     TrackType           string
     FileFolderCount     int
     LibraryFolderCount  int
+    Compilation         bool
     Name                string
     Artist              string
     AlbumArtist         string
@@ -39,10 +44,29 @@ type Track struct {
     Genre               string
     Kind                string
     Location            string
+    Podcast             bool
+    Unplayed            bool
+    SortArtist          string
+    SortName            string
+    SortAlbum           string
+    SortAlbumArtist     string
+    SortComposer        string
+    Purchased           bool
+    Explicit            bool
+    Comments            string
+    Loved               bool
+    Grouping            string
+    BPM                 int
+}
+
+func (t *Track) String() string {
+
+    return fmt.Sprintf("Track: %s by %s (%d)", t.Name, t.Artist, t.TrackID)
+
 }
 
 // UnmarshalXML is a custom unmarshaller function for itunes Track xml format
-func (lib *Track) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
+func (t *Track) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
 
     for {
         token, err := decoder.Token()
@@ -50,25 +74,36 @@ func (lib *Track) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) err
             return err
         }
 
-        switch t := token.(type) {
+        switch tok := token.(type) {
 
         case xml.StartElement:
 
-            if t.Name.Local == "key" {
+            if tok.Name.Local == "key" {
 
                 key, err := readOpenTagAsString(decoder)
                 if err != nil {
                     return err
                 }
 
-                resolveKeyOnStruct(lib, key, decoder)
+                err = resolveKeyOnStruct(t, key, decoder)
+                if err != nil {
+                    return err
+                }
 
             } else {
 
-                fmt.Printf("skip %s\n", t.Name.Local)
+                fmt.Printf("skip %s (Track)\n", tok.Name.Local)
                 _ = decoder.Skip()
 
             }
+
+        case xml.EndElement:
+
+            if start.End() == tok {
+                return nil
+            }
+
+            return ErrInvalidFormat
 
         }
 

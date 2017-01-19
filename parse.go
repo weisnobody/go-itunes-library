@@ -60,9 +60,6 @@ func ParseReader(input io.Reader) (*Library, error) {
 
             _ = decoder.Skip()
 
-        default:
-            //fmt.Println(token)
-
         }
     }
 

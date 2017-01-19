@@ -16,7 +16,7 @@ type Library struct {
     ShowContentRatings  bool
     LibraryPersistentID string
     MusicFolder         string
-    Tracks              []Track
+    Tracks              []*Track
     Playlists           []interface{}
 }
 
@@ -40,11 +40,14 @@ func (lib *Library) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) e
                     return err
                 }
 
-                resolveKeyOnStruct(lib, key, decoder)
+                err = resolveKeyOnStruct(lib, key, decoder)
+                if err != nil {
+                    return err
+                }
 
             } else {
 
-                fmt.Printf("skip %s\n", t.Name.Local)
+                fmt.Printf("skip %s (Library)\n", t.Name.Local)
                 _ = decoder.Skip()
 
             }
