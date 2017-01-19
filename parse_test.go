@@ -8,11 +8,12 @@ import (
 
 func TestParseFile(t *testing.T) {
 
-    _, err := itunes.ParseFile("/home/Downloads/rbottriell/iTunes Music Library.xml")
+    lib, err := itunes.ParseFile("test_data/test_library_1.xml")
     if nil != err {
         t.Fatal(err)
     }
 
-    t.Fail()
+    t.Logf("Library loaded successfully!\n")
+    t.Logf(" - found %d tracks and %d playlists", len(lib.Tracks), len(lib.Playlists))
 
 }

@@ -3,6 +3,7 @@ package itunes
 import (
     "encoding/xml"
     "fmt"
+    "io"
     "time"
 )
 
@@ -17,7 +18,40 @@ type Library struct {
     LibraryPersistentID string
     MusicFolder         string
     Tracks              []*Track
-    Playlists           []interface{}
+    tracksByID          map[int]*Track
+    Playlists           []*Playlist
+}
+
+// sortTracksByID sorts the tracks in the Tracks slice by id into
+// the tracksByID slice for easy lookup later
+func (lib *Library) sortTracksByID() {
+
+    byID := make(map[int]*Track)
+
+    for _, t := range lib.Tracks {
+
+        byID[t.TrackID] = t
+
+    }
+
+    lib.tracksByID = byID
+
+}
+
+// mapAllPlaylistTracks updates the tracks in each playlist to ensure
+// that they map to the valid track struct in the Library.Tracks slice
+func (lib *Library) mapAllPlaylistTracks() {
+
+    for _, p := range lib.Playlists {
+
+        for i, t := range p.PlaylistItems {
+
+            p.PlaylistItems[i] = lib.tracksByID[t.TrackID]
+
+        }
+
+    }
+
 }
 
 // UnmarshalXML is a custom unmarshaller function for itunes library xml format
@@ -25,6 +59,11 @@ func (lib *Library) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) e
 
     for {
         token, err := decoder.Token()
+        if err == io.EOF {
+            lib.sortTracksByID()
+            lib.mapAllPlaylistTracks()
+            return nil
+        }
         if err != nil {
             return err
         }
@@ -48,7 +87,10 @@ func (lib *Library) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) e
             } else {
 
                 fmt.Printf("skip %s (Library)\n", t.Name.Local)
-                _ = decoder.Skip()
+                err = decoder.Skip()
+                if err != nil {
+                    return err
+                }
 
             }
 

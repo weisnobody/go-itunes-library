@@ -40,14 +40,14 @@ func readOpenTagAsString(decoder *xml.Decoder) (string, error) {
 // resolveKeyOnStruct resolves the given key by reading the expected data from decoder
 func resolveKeyOnStruct(item interface{}, key string, decoder *xml.Decoder) error {
 
-    token, err := decoder.Token()
+    token, err := findNextStartElement(decoder)
     if err != nil {
         return err
     }
 
     // get information about posiible matching
     // struct field
-    fieldName := strings.Replace(key, " ", "", -1)
+    fieldName := strings.Replace(strings.Title(key), " ", "", -1)
     field := reflect.ValueOf(item).Elem().FieldByName(fieldName)
     if !field.IsValid() {
         fmt.Printf("skipping missing field: %s\n", fieldName)
@@ -77,7 +77,7 @@ func resolveKeyOnStruct(item interface{}, key string, decoder *xml.Decoder) erro
         field.SetInt(int64(i))
 
     case bool:
-        v := token.(xml.StartElement).Name.Local
+        v := token.Name.Local
         err = decoder.Skip()
         if nil != err {
             return err
@@ -95,14 +95,23 @@ func resolveKeyOnStruct(item interface{}, key string, decoder *xml.Decoder) erro
         }
         field.Set(reflect.ValueOf(t))
 
-    case []*Track:
-
-        start, err := findNextStartElement(decoder, token)
+    case []byte:
+        v, err := readOpenTagAsString(decoder)
         if nil != err {
             return err
         }
+        field.Set(reflect.ValueOf([]byte(v)))
 
-        tracks, err := decodeTracks(decoder, start)
+    case []*Track:
+        tracks, err := decodeTracks(decoder, token)
+        if err != nil {
+            return err
+        }
+        field.Set(reflect.ValueOf(tracks))
+
+    case []*Playlist:
+
+        tracks, err := decodePlaylists(decoder, token)
         if err != nil {
             return err
         }
@@ -118,25 +127,20 @@ func resolveKeyOnStruct(item interface{}, key string, decoder *xml.Decoder) erro
 
 }
 
-func findNextStartElement(decoder *xml.Decoder, begin xml.Token) (xml.StartElement, error) {
-
-    token := begin
-    var err error
+func findNextStartElement(decoder *xml.Decoder) (xml.StartElement, error) {
 
     for {
+
+        token, err := decoder.Token()
+        if err != nil {
+            return xml.StartElement{}, err
+        }
 
         switch t := token.(type) {
 
         case xml.StartElement:
 
             return t, nil
-
-        default:
-
-            token, err = decoder.Token()
-            if err != nil {
-                return xml.StartElement{}, err
-            }
 
         }
 
@@ -147,8 +151,6 @@ func findNextStartElement(decoder *xml.Decoder, begin xml.Token) (xml.StartEleme
 func decodeTracks(decoder *xml.Decoder, start xml.StartElement) ([]*Track, error) {
 
     tracks := make([]*Track, 0)
-
-    fmt.Println("Tracks Starting")
 
     for {
         token, err := decoder.Token()
@@ -186,6 +188,53 @@ func decodeTracks(decoder *xml.Decoder, start xml.StartElement) ([]*Track, error
         case xml.EndElement:
             if t == start.End() {
                 return tracks, nil
+            }
+            return nil, ErrInvalidFormat
+
+        case xml.CharData:
+            continue
+
+        default:
+            return nil, ErrInvalidFormat
+
+        }
+
+    }
+
+}
+
+func decodePlaylists(decoder *xml.Decoder, start xml.StartElement) ([]*Playlist, error) {
+
+    playlists := make([]*Playlist, 0)
+
+    for {
+        token, err := decoder.Token()
+        if err != nil {
+            return nil, err
+        }
+
+        switch t := token.(type) {
+
+        case xml.StartElement:
+
+            if t.Name.Local == "dict" {
+
+                playlist := &Playlist{}
+                err := playlist.UnmarshalXML(decoder, t)
+                if err != nil {
+                    return nil, err
+                }
+
+                playlists = append(playlists, playlist)
+
+            } else {
+
+                return nil, ErrInvalidFormat
+            }
+
+        case xml.EndElement:
+            if t == start.End() {
+                return playlists, nil
             }
             return nil, ErrInvalidFormat
 

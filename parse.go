@@ -2,7 +2,6 @@ package itunes
 
 import (
     "encoding/xml"
-    "fmt"
     "io"
     "os"
 )
@@ -44,9 +43,9 @@ func ParseReader(input io.Reader) (*Library, error) {
         case xml.StartElement:
 
             if t.Name.Local == "plist" {
-                for _, attr := range t.Attr {
+                /*for _, attr := range t.Attr {
                     fmt.Printf("%s: %s\n", attr.Name.Local, attr.Value)
-                }
+                }*/
                 continue
             }
 
@@ -58,7 +57,10 @@ func ParseReader(input io.Reader) (*Library, error) {
                 return lib, nil
             }
 
-            _ = decoder.Skip()
+            err = decoder.Skip()
+            if nil != err {
+                return nil, err
+            }
 
         }
     }

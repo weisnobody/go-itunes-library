@@ -57,6 +57,22 @@ type Track struct {
     Loved               bool
     Grouping            string
     BPM                 int
+    Protected           bool
+    HasVideo            bool
+    VolumeAdjustment    int
+    StartTime           int
+    StopTime            int
+    Movie               bool
+    ITunesU             bool
+    Disabled            bool
+    PartOfGaplessAlbum  bool
+    Series              string
+    Episode             string
+    EpisodeOrder        int
+    TVShow              bool
+    Season              string
+    ContentRating       string
+    Equalizer           string
 }
 
 func (t *Track) String() string {
