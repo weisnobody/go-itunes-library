@@ -32,7 +32,8 @@ func ParseReader(input io.Reader) (*Library, error) {
         if nil != err {
 
             if err == io.EOF {
-                return nil, ErrInvalidFormat
+                return nil, NewInvalidFormatError(
+                    "Unexpected end of library file")
             }
 
             return nil, err
@@ -48,11 +49,6 @@ func ParseReader(input io.Reader) (*Library, error) {
                     return nil, err
                 }
                 return lib, nil
-            }
-
-            err = decoder.Skip()
-            if nil != err {
-                return nil, err
             }
 
         }

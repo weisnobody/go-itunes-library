@@ -74,7 +74,8 @@ func (p *Playlist) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) er
                 return nil
             }
 
-            return ErrInvalidFormat
+            return NewInvalidFormatError(
+                fmt.Sprintf("Unexpected end element in playlist: %s", tok.Name.Local))
 
         }
 

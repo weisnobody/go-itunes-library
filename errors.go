@@ -1,8 +1,17 @@
 package itunes
 
-import "fmt"
-
-// ErrInvalidFormat is raised when an input file
+// ErrInvalidFormat is returned when an input file
 // does not meet the expected itune library xml format
-var ErrInvalidFormat = fmt.Errorf(
-    "The given library file is not in the expected iTunes XML format")
+type ErrInvalidFormat struct {
+    s string
+}
+
+func (err ErrInvalidFormat) Error() string {
+    return err.s
+}
+
+// NewInvalidFormatError created a new invalid format error
+// that formats to the given string
+func NewInvalidFormatError(s string) ErrInvalidFormat {
+    return ErrInvalidFormat{s}
+}

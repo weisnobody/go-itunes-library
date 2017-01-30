@@ -30,7 +30,8 @@ func readOpenTagAsString(decoder *xml.Decoder) (string, error) {
             return value, nil
 
         default:
-            return "", ErrInvalidFormat
+            return "", NewInvalidFormatError(
+                fmt.Sprintf("Unexpected token type in readOpenTagAsString: %s", reflect.TypeOf(t)))
 
         }
     }
@@ -118,7 +119,8 @@ func resolveKeyOnStruct(item interface{}, key string, decoder *xml.Decoder) erro
         field.Set(reflect.ValueOf(tracks))
 
     default:
-        return fmt.Errorf("unknown field type for %s\n", key)
+        return NewInvalidFormatError(
+            fmt.Sprintf("unknown field type for %s\n", key))
 
     }
 
@@ -181,20 +183,23 @@ func decodeTracks(decoder *xml.Decoder, start xml.StartElement) ([]*Track, error
 
             } else {
 
-                return nil, ErrInvalidFormat
+                return nil, NewInvalidFormatError(
+                    "expected dict element after key in track list")
             }
 
         case xml.EndElement:
             if t == start.End() {
                 return tracks, nil
             }
-            return nil, ErrInvalidFormat
+            return nil, NewInvalidFormatError(
+                fmt.Sprintf("unexpected end elemet in track list: %s", t.Name.Local))
 
         case xml.CharData:
             continue
 
         default:
-            return nil, ErrInvalidFormat
+            return nil, NewInvalidFormatError(
+                fmt.Sprintf("Unexpected token type in track list: %s", reflect.TypeOf(t)))
 
         }
 
@@ -228,20 +233,23 @@ func decodePlaylists(decoder *xml.Decoder, start xml.StartElement) ([]*Playlist,
 
             } else {
 
-                return nil, ErrInvalidFormat
+                return nil, NewInvalidFormatError(
+                    "expected dict element after key in playlist list")
             }
 
         case xml.EndElement:
             if t == start.End() {
                 return playlists, nil
             }
-            return nil, ErrInvalidFormat
+            return nil, NewInvalidFormatError(
+                fmt.Sprintf("unexpected end elemet in playlist list: %s", t.Name.Local))
 
         case xml.CharData:
             continue
 
         default:
-            return nil, ErrInvalidFormat
+            return nil, NewInvalidFormatError(
+                fmt.Sprintf("Unexpected token type in playlist list: %s", reflect.TypeOf(t)))
 
         }
 

@@ -119,7 +119,8 @@ func (t *Track) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error
                 return nil
             }
 
-            return ErrInvalidFormat
+            return NewInvalidFormatError(
+                fmt.Sprintf("Unexpected end element in track: %s", tok.Name.Local))
 
         }
 
