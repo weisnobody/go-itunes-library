@@ -22,6 +22,12 @@ type Library struct {
     Playlists           []*Playlist
 }
 
+// String returns a nice string representation of this Library
+func (lib *Library) String() string {
+    return fmt.Sprintf("iTunes Library: %d Tracks, %d Playlists (%s)",
+        len(lib.Tracks), len(lib.Playlists), lib.LibraryPersistentID)
+}
+
 // sortTracksByID sorts the tracks in the Tracks slice by id into
 // the tracksByID slice for easy lookup later
 func (lib *Library) sortTracksByID() {
