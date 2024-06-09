@@ -62,6 +62,7 @@ type Album struct {
 
 func (t *Album) String() string {
 
-	return fmt.Sprintf("Album: %s by %s [%v songs, %v podcasts, %v music videos, %v movies, %v tv shows]", t.Name, t.Artist, t.CountSongs, t.CountPodcasts, t.CountMusicVideos, t.CountMovies, t.CountTVShows)
+	//return fmt.Sprintf("Album: %s by %s [%v songs, %v podcasts, %v music videos, %v movies, %v tv shows]", t.Name, t.Artist, t.CountSongs, t.CountPodcasts, t.CountMusicVideos, t.CountMovies, t.CountTVShows)
+	return fmt.Sprintf("Artist: %s Album: %s [%v songs, %v podcasts, %v music videos, %v movies, %v tv shows]", t.Artist, t.Name, t.CountSongs, t.CountPodcasts, t.CountMusicVideos, t.CountMovies, t.CountTVShows)
 
 }

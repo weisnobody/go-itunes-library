@@ -80,6 +80,9 @@ func (lib *Library) sortTracksByID() {
     
     for _, t := range lib.Tracks {
 
+        if t.Album == "Voice Memos" && t.Genre == "Voice Memo" {
+            continue
+        }
         byID[t.TrackID] = t
         
         trackKind := "music"
@@ -112,6 +115,7 @@ func (lib *Library) sortTracksByID() {
             // pull together "artist" info
             
             AlbumArtist := strings.TrimSpace(t.Artist)
+            AlbumArtist = cleanArtist(AlbumArtist)
             AlbumArtistSort := AlbumArtist
             if t.SortArtist != "" {
                 AlbumArtistSort = strings.TrimSpace(t.SortArtist)
@@ -121,6 +125,7 @@ func (lib *Library) sortTracksByID() {
             }
             if t.AlbumArtist != "" {
                 AlbumArtist = strings.TrimSpace(t.AlbumArtist)
+                AlbumArtist = cleanArtist(AlbumArtist)
                 if t.SortAlbumArtist != "" {
                     AlbumArtistSort = strings.TrimSpace(t.SortAlbumArtist)
                 } else {
