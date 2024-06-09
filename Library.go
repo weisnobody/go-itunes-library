@@ -6,6 +6,8 @@ import (
     "io"
     "time"
     "strings"
+    "strconv"
+    "regexp"
 )
 
 // Library represents an entire iTunes library data structure
@@ -115,24 +117,34 @@ func (lib *Library) sortTracksByID() {
             // pull together "artist" info
             
             AlbumArtist := strings.TrimSpace(t.Artist)
+            t.ArtistOriginal = AlbumArtist
             AlbumArtist = cleanArtist(AlbumArtist)
             AlbumArtistSort := AlbumArtist
             if t.SortArtist != "" {
+                //fmt.Println("Has SortArtist")
                 AlbumArtistSort = strings.TrimSpace(t.SortArtist)
             } else {
                 // TODO create ArtistSort
                 AlbumArtistSort = strings.TrimSpace(t.Artist)
             }
+            
+            //fmt.Println(fmt.Sprintf("1] AA: %s, AAS: %s, SA: %s, SAA: %s", AlbumArtist, AlbumArtistSort, t.SortArtist, t.SortAlbumArtist))
+            
             if t.AlbumArtist != "" {
                 AlbumArtist = strings.TrimSpace(t.AlbumArtist)
+                t.AlbumArtistOriginal = AlbumArtist
                 AlbumArtist = cleanArtist(AlbumArtist)
                 if t.SortAlbumArtist != "" {
+                    //fmt.Println("Has SortAlbumArtist")
                     AlbumArtistSort = strings.TrimSpace(t.SortAlbumArtist)
                 } else {
                     // TODO create ArtistSort
                     AlbumArtistSort = strings.TrimSpace(t.AlbumArtist)
                 }
             }
+            
+            //fmt.Println(fmt.Sprintf("2] AA: %s, AAS: %s, SA: %s, SAA: %s", AlbumArtist, AlbumArtistSort, t.SortArtist, t.SortAlbumArtist))
+            
             curArtist := &Artist{}
             // for the Artists key, should likely create a "sanitized" version (all lowercase would be a start
             artistKey := strings.ToLower(AlbumArtist)
@@ -142,9 +154,19 @@ func (lib *Library) sortTracksByID() {
                 curArtist.Name = AlbumArtist
             }
             
-            if curArtist.SortName == AlbumArtist && AlbumArtistSort != AlbumArtist {
+            //if AlbumArtist == "2008 - Disk 1" {
+            //fmt.Println(fmt.Sprintf("3] AA: %s, AAS: %s, SA: %s, SAA: %s", AlbumArtist, AlbumArtistSort, t.SortArtist, t.SortAlbumArtist))
+                
+            if curArtist.SortName == "" || (curArtist.SortName == AlbumArtist && AlbumArtistSort != AlbumArtist) {
+                if AlbumArtistSort == "various" {
+                    AlbumArtistSort = "Various Artists"
+                }
+                //fmt.Println("Setting SortName")
                 curArtist.SortName = AlbumArtistSort
+            //} else {
+            //    fmt.Println(fmt.Sprintf("%s == %s && %s != %s", curArtist.SortName, AlbumArtist, AlbumArtistSort, AlbumArtist))
             }
+
             // Should we collect Song Artist / Composer info at artist level?
             
             if curArtist.YearFirst == 0 || curArtist.YearFirst > t.Year {
@@ -157,9 +179,17 @@ func (lib *Library) sortTracksByID() {
             if curArtist.DateModified.IsZero()  || curArtist.DateModified.Before(t.DateModified) {
                 curArtist.DateModified = t.DateModified
             }
-            if curArtist.DateAdded.After(t.DateAdded) {
+            //if curArtist.DateModified.IsZero() {
+            //    fmt.Println(fmt.Sprintf("t: %v, c: %v", t.DateModified, curArtist.DateModified))
+            //}
+
+
+            if curArtist.DateAdded.IsZero() || curArtist.DateAdded.After(t.DateAdded) {
                 curArtist.DateAdded = t.DateAdded
             }
+            //if curArtist.DateAdded.IsZero() {
+            //    fmt.Println(fmt.Sprintf("t: %v, c: %v", t.DateAdded, curArtist.DateAdded))
+            //}
 
             // need to rethink all the rating stuff, how to aggregate songs / album ratings up through the tree
             if curArtist.Rating < t.Rating {
@@ -218,13 +248,28 @@ func (lib *Library) sortTracksByID() {
             // pull together "Album" info
             
             AlbumName := strings.TrimSpace(t.Album)
+            t.AlbumOriginal = AlbumName
+            AlbumName = cleanAlbum(AlbumName)
+
             AlbumSort := strings.TrimSpace(t.Album)
             if t.SortAlbum != "" {
                 AlbumSort = strings.TrimSpace(t.SortAlbum)
             } else {
                 // TODO create AlbumSort
                 AlbumSort = strings.TrimSpace(t.Album)
+                AlbumSort = cleanAlbum(AlbumSort)
             }
+            
+            if t.DiscNumber == 0 {
+                reDisk := regexp.MustCompile(`Dis[ck] \d*$`) 
+                diskFound := reDisk.MatchString(t.AlbumOriginal)
+                if diskFound {
+                    reNum := regexp.MustCompile(`\d*$`) 
+                    discNum, _ := strconv.Atoi(reNum.FindString(t.AlbumOriginal))
+                    t.DiscNumber = discNum
+                }
+            }
+
             curAlbum := &Album{}
             // for the Album key, should likely create a "sanitized" version (all lowercase would be a start, removing deluxe, etc)
             albumKey := fmt.Sprintf("%s##%s", artistKey, strings.ToLower(AlbumName))
@@ -263,7 +308,7 @@ func (lib *Library) sortTracksByID() {
             if curAlbum.DateModified.IsZero() || curAlbum.DateModified.Before(t.DateModified) {
                 curAlbum.DateModified = t.DateModified
             }
-            if curAlbum.DateAdded.After(t.DateAdded) {
+            if curAlbum.DateAdded.IsZero() || curAlbum.DateAdded.After(t.DateAdded) {
                 curAlbum.DateAdded = t.DateAdded
             }
             if t.PlayCount > curAlbum.PlayCount {

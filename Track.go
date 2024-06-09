@@ -38,9 +38,12 @@ type Track struct {
     Compilation         bool
     Name                string
     Artist              string
+    ArtistOriginal      string
     AlbumArtist         string
+    AlbumArtistOriginal string
     Composer            string
     Album               string
+    AlbumOriginal       string
     Genre               string
     Kind                string  // type of track [.* (audio|video) file]
     Location            string

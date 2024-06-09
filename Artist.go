@@ -44,7 +44,7 @@ type Artist struct {
 
 func (t *Artist) String() string {
 
-	return fmt.Sprintf("Artist: %s [%v albums, %v songs, %v podcasts, %v music videos, %v movies, %v tv shows]", t.Name, len(t.Albums), t.CountSongs, t.CountPodcasts, t.CountMusicVideos, t.CountMovies, t.CountTVShows)
+	return fmt.Sprintf("Artist: %s (%s; a: %v; m: %v) [%v albums, %v songs, %v podcasts, %v music videos, %v movies, %v tv shows]", t.Name, t.SortName, t.DateAdded, t.DateAdded, len(t.Albums), t.CountSongs, t.CountPodcasts, t.CountMusicVideos, t.CountMovies, t.CountTVShows)
 
 }
 

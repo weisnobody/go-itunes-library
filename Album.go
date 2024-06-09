@@ -3,6 +3,8 @@ package itunes
 import (
 	"fmt"
 	"time"
+	"regexp"
+	"strings"
 )
 
 // Album represents an Album / group of tracks (not a real iTunes object)
@@ -65,4 +67,19 @@ func (t *Album) String() string {
 	//return fmt.Sprintf("Album: %s by %s [%v songs, %v podcasts, %v music videos, %v movies, %v tv shows]", t.Name, t.Artist, t.CountSongs, t.CountPodcasts, t.CountMusicVideos, t.CountMovies, t.CountTVShows)
 	return fmt.Sprintf("Artist: %s Album: %s [%v songs, %v podcasts, %v music videos, %v movies, %v tv shows]", t.Artist, t.Name, t.CountSongs, t.CountPodcasts, t.CountMusicVideos, t.CountMovies, t.CountTVShows)
 
+}
+
+
+func cleanAlbum(name string) string {
+	newName := name
+	if strings.Contains(name, " Disc ") || strings.Contains(name, " Disk ") {
+		re := regexp.MustCompile(`( -)? Dis(c|k) \d*$`)
+		newName = re.ReplaceAllString(name, "")
+	}
+	
+	if false && name != newName {
+		fmt.Println(fmt.Sprintf("Cleaning: %s (%s)", name, newName))
+	}
+
+	return newName
 }
