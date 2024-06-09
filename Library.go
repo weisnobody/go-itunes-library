@@ -85,40 +85,68 @@ func (lib *Library) sortTracksByID() {
         if t.Album == "Voice Memos" && t.Genre == "Voice Memo" {
             continue
         }
+        
         byID[t.TrackID] = t
         
         trackKind := "music"
         // 
         if t.Movie {
             // MoviesByID = append(MoviesByID, t.TrackID)
-            Movies = append(Movies, t)
+            //Movies = append(Movies, t)
             trackKind = "movie"
         } else if t.TVShow {
-            TVShowsByID = append(TVShowsByID, t.TrackID)
+            //TVShowsByID = append(TVShowsByID, t.TrackID)
             trackKind = "tvshow"
         } else if t.Podcast {
-            PodcastsByID = append(PodcastsByID, t.TrackID)
+            //PodcastsByID = append(PodcastsByID, t.TrackID)
             trackKind = "podcast"
         } else if t.MusicVideo {
-            MusicVideosByID = append(MusicVideosByID, t.TrackID)
+            //MusicVideosByID = append(MusicVideosByID, t.TrackID)
             trackKind = "musicvideo"
+        } else if strings.Contains(t.Location, "/Movies/") {
+            trackKind = "movie"
+        } else if strings.Contains(t.Location, "/TV%20Shows/") {
+            trackKind = "tvshow"
+        } else if t.Album == "Voice Memos" && t.Genre == "Voice Memo" {
+            trackKind = "voice_memo"
+        } else if t.TotalTime > 7200000 { // time greater than 2 hours
+            trackKind = "audiobook"
+        
+        
+        
         } else {
             // MusicByID = append(MusicByID, t.TrackID)
-            Music = append(Music, t)
+            //Music = append(Music, t)
             trackKind = "music"
         }
+        t.TrackKind = trackKind
         
         doArtistsFor := map[string]bool {
             "music": true,
         }
+        t.NameOriginal = t.Name
+        if strings.ToLower(t.Name) == "[blank]" || strings.ToLower(t.Name) == "[hidden track]" {
+            t.Name = fmt.Sprintf("%s-t:%v", t.Name, t.TrackNumber)
+        } else if t.PersistentID == "6D073C0ED894D8DB" && t.Name == "Everlong" {
+            t.Name = "Everlong (Acoustic)"
+        } else if t.PersistentID == "CD0C69A4B5AF8E48" && t.Name == "Tear You Apart" {
+            t.Name = "Tear You Apart (Bonus Track)"
+        }
+        
         
         //if _, containsKind := doArtistsFor[trackKind]; containsKind {
         if doArtistsFor[trackKind] {
             // pull together "artist" info
             
+            if strings.Contains(t.Album, "(Original Motion Picture Soundtrack)") {
+                t.AlbumArtist = "Soundtrack"
+            }
+            
             AlbumArtist := strings.TrimSpace(t.Artist)
-            t.ArtistOriginal = AlbumArtist
+            t.ArtistOriginal = AlbumArtist  // save original after trimming
             AlbumArtist = cleanArtist(AlbumArtist)
+            t.Artist = AlbumArtist
+
             AlbumArtistSort := AlbumArtist
             if t.SortArtist != "" {
                 //fmt.Println("Has SortArtist")
@@ -142,6 +170,8 @@ func (lib *Library) sortTracksByID() {
                     AlbumArtistSort = strings.TrimSpace(t.AlbumArtist)
                 }
             }
+            t.AlbumArtist = AlbumArtist
+            
             
             //fmt.Println(fmt.Sprintf("2] AA: %s, AAS: %s, SA: %s, SAA: %s", AlbumArtist, AlbumArtistSort, t.SortArtist, t.SortAlbumArtist))
             
@@ -247,9 +277,11 @@ func (lib *Library) sortTracksByID() {
             //
             // pull together "Album" info
             
+            t.AlbumOriginal = t.Album
             AlbumName := strings.TrimSpace(t.Album)
-            t.AlbumOriginal = AlbumName
+            t.AlbumOriginal = AlbumName  // save Original after trimming
             AlbumName = cleanAlbum(AlbumName)
+            t.Album = AlbumName
 
             AlbumSort := strings.TrimSpace(t.Album)
             if t.SortAlbum != "" {
@@ -259,14 +291,29 @@ func (lib *Library) sortTracksByID() {
                 AlbumSort = strings.TrimSpace(t.Album)
                 AlbumSort = cleanAlbum(AlbumSort)
             }
+            t.SortAlbum = AlbumSort
             
             if t.DiscNumber == 0 {
-                reDisk := regexp.MustCompile(`Dis[ck] \d*$`) 
+                reDisk := regexp.MustCompile(`(?i)Dis[ck] \d*$`) 
                 diskFound := reDisk.MatchString(t.AlbumOriginal)
+                reDisk2 := regexp.MustCompile(`(?i)Dis[ck] (\d*)`) 
+                diskFound2 := reDisk2.FindStringSubmatch(t.AlbumOriginal)
                 if diskFound {
                     reNum := regexp.MustCompile(`\d*$`) 
                     discNum, _ := strconv.Atoi(reNum.FindString(t.AlbumOriginal))
                     t.DiscNumber = discNum
+                } else if len(diskFound2) > 0 {
+                    t.DiscNumber, _ = strconv.Atoi(diskFound2[0])
+                } else if strings.Contains(strings.ToLower(t.AlbumOriginal), "disk one") {
+                    t.DiscNumber = 1
+                } else if strings.Contains(strings.ToLower(t.AlbumOriginal), "disk two") {
+                    t.DiscNumber = 2
+                } else if strings.Contains(strings.ToLower(t.AlbumOriginal), "disk three") {
+                    t.DiscNumber = 3
+                } else if strings.Contains(strings.ToLower(t.AlbumOriginal), "disk a") {
+                    t.DiscNumber = 1
+                } else if strings.Contains(strings.ToLower(t.AlbumOriginal), "disk b") {
+                    t.DiscNumber = 2
                 }
             }
 
@@ -290,6 +337,10 @@ func (lib *Library) sortTracksByID() {
             if curAlbum.SortArtist == AlbumArtist && AlbumArtistSort != AlbumArtist {
                 curAlbum.SortArtist = AlbumArtistSort
             }
+            
+            if curAlbum.Name == "Classical Marches" {
+                fmt.Println("CM: ", t.Album, t.Artist, curAlbum.Artist, AlbumName)
+            }
 
             // Should we collect Song Artist / Composer info at album level?
             
@@ -301,6 +352,10 @@ func (lib *Library) sortTracksByID() {
             if curAlbum.ReleaseDate.IsZero() {
                 curAlbum.ReleaseDate = t.ReleaseDate
             }
+            if curAlbum.TrackCount < t.TrackCount {
+                curAlbum.TrackCount = t.TrackCount
+            }
+
             curAlbum.TracksHave ++
             //TracksCount we don't know yet
             
@@ -445,7 +500,23 @@ func (lib *Library) sortTracksByID() {
             }
 
         }
+        
+        byID[t.TrackID] = t
+        
+        if trackKind == "movie" {
+            Movies = append(Movies, t)
+        } else if trackKind == "tvshow" {
+            TVShowsByID = append(TVShowsByID, t.TrackID)
+        } else if trackKind == "podcast" {
+            PodcastsByID = append(PodcastsByID, t.TrackID)
+        } else if trackKind == "musicvideo" {
+            MusicVideosByID = append(MusicVideosByID, t.TrackID)
+        } else if trackKind == "music"{
+            Music = append(Music, t)
+        }
+
     }
+    
 
     lib.tracksByID = byID
     

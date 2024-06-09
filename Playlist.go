@@ -19,6 +19,7 @@ type Playlist struct {
     SmartCriteria        []byte
     ParentPersistentID   string
     DistinguishedKind    int
+    Kind                 string
     PurchasedMusic       bool
     Disliked             bool
     Music                bool
@@ -35,6 +36,35 @@ type Playlist struct {
 func (p *Playlist) String() string {
 
     return fmt.Sprintf("Playlist: %s (%d tracks)", p.Name, len(p.PlaylistItems))
+
+}
+
+func PlaylistDistinguished(kind int) string {
+    newKind := fmt.Sprintf("%v", kind)
+    
+    kinds := map[int]string{
+        0: "",
+        2: "Movies",
+        3: "TV Shows",
+        4: "Music",
+        5: "Audiobooks",
+        10: "Podcasts",
+        17: "Voice Memos",
+        19: "Purchased",
+        65: "Downloaded",
+        66: "Downloaded",
+        67: "Downloaded",
+    }
+
+    if _, exists := kinds[kind]; exists {
+        newKind = kinds[kind]
+    }
+    
+    if false && newKind != fmt.Sprintf("%v", kind) {
+        fmt.Println(fmt.Sprintf("Cleaning Distinguished: %s (%s)", kind, newKind))
+    }
+
+    return newKind
 
 }
 

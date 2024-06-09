@@ -18,6 +18,7 @@ type Artist struct {
 	Rating              int
 	AlbumRatings        []int
 	Albums              map[string]*Album
+	TrackCount          int
 	//PodCasts            []*Track  // likely should be a map of maps, rather than individuals
 	//TVShows             []*Track
 	//Movies              []*Track

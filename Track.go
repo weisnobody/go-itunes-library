@@ -37,6 +37,7 @@ type Track struct {
     LibraryFolderCount  int
     Compilation         bool
     Name                string
+    NameOriginal        string
     Artist              string
     ArtistOriginal      string
     AlbumArtist         string
@@ -88,11 +89,12 @@ type Track struct {
     Season              string
     ContentRating       string
     Equalizer           string
+    TrackKind           string
 }
 
 func (t *Track) String() string {
 
-    return fmt.Sprintf("Track: %s by %s [%v] %v of %v (%d)", t.Name, t.Artist, t.TotalTime, t.TrackNumber, t.TrackCount, t.TrackID)
+    return fmt.Sprintf("%s Track: %s by %s on %s [%v] %v of %v (%d)", t.TrackKind, t.Name, t.Artist, t.Album, t.TotalTime, t.TrackNumber, t.TrackCount, t.TrackID)
     // return fmt.Sprintf("Track: %s by %s (%d) [%v podcast, %v music video, %v movie, %v tv show]", t.Name, t.Artist, t.TrackID, t.Podcast, t.MusicVideo, t.Movie, t.TVShow)
 
 }

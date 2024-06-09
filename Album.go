@@ -17,7 +17,7 @@ type Album struct {
 	DateModified        time.Time
 	TotalTime           int
 	TracksHave          int
-	TracksCount         int
+	TrackCount          int
 	DateAdded           time.Time
 	PlayCount           int
 	PlayCountAll        int
@@ -72,14 +72,32 @@ func (t *Album) String() string {
 
 func cleanAlbum(name string) string {
 	newName := name
-	if strings.Contains(name, " Disc ") || strings.Contains(name, " Disk ") {
-		re := regexp.MustCompile(`( -)? Dis(c|k) \d*$`)
-		newName = re.ReplaceAllString(name, "")
+	
+	if name == "Disk Two" {
+		newName = "Classical Marches"
 	}
+	re :=   regexp.MustCompile(`(?i)( ?-)? ?(\(|\[)?dis(c|k) (\d+|a|b|one|two|three)( of \d+)?(\)|\])?`) // 108
+	//re :=   regexp.MustCompile(`(?i)( ?-)?( |\(|\[)?dis(c|k) \d*( of \d*)?(\)|\])$`) // 108
+	//re :=   regexp.MustCompile(`(?i)( ?-)?( |\(|\[)?dis(c|k) \d*( of \d*)?(\)|\]) ?$`) // missed 108 unique
+	//re := regexp.MustCompile(`(?i)( ?-)?( |\[|\()dis(c|k) \d*( of \d*)?\(]|\)?$`)
+	newName = re.ReplaceAllString(newName, "")
+	//if strings.Contains(name, " Disc ") || strings.Contains(name, " Disk ") {
+	//	re := regexp.MustCompile(`( -)? Dis(c|k) \d*$`)
+	//	newName = re.ReplaceAllString(newName, "")
+	//}
+
+	if strings.Contains(name, " (Original Motion Picture Soundtrack)") {
+		newName = strings.Replace(newName, " (Original Motion Picture Soundtrack)", "", 1)
+	}
+	newName = strings.TrimSpace(newName)
 	
 	if false && name != newName {
 		fmt.Println(fmt.Sprintf("Cleaning: %s (%s)", name, newName))
 	}
-
+	if false && strings.Contains(strings.ToLower(newName), "disk ") || strings.Contains(strings.ToLower(newName), "disc ") {
+		fmt.Println(fmt.Sprintf("Missed Cleaning: !%s!", newName))
+	
+	}
+	
 	return newName
 }
