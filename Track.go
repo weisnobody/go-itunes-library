@@ -42,34 +42,46 @@ type Track struct {
     Composer            string
     Album               string
     Genre               string
-    Kind                string
+    Kind                string  // type of track [.* (audio|video) file]
     Location            string
+    FileType            string
+    Matched             bool    // possibly related to iTunes Match?
+    Normalization       int
     Podcast             bool
+    MusicVideo          bool
+    Movie               bool
+    TVShow              bool
     Unplayed            bool
     SortArtist          string
     SortName            string
     SortAlbum           string
     SortAlbumArtist     string
     SortComposer        string
+    SortSeries          string
     Purchased           bool
     Explicit            bool
+    Clean               bool
     Comments            string
     Loved               bool
+    Liked               bool
+    Disliked            bool
+    AlbumLoved          bool
     Grouping            string
     BPM                 int
     Protected           bool
     HasVideo            bool
+    HD                  bool
+    VideoHeight         int
+    VideoWidth          int
     VolumeAdjustment    int
     StartTime           int
     StopTime            int
-    Movie               bool
     ITunesU             bool
     Disabled            bool
     PartOfGaplessAlbum  bool
     Series              string
     Episode             string
     EpisodeOrder        int
-    TVShow              bool
     Season              string
     ContentRating       string
     Equalizer           string
@@ -77,7 +89,8 @@ type Track struct {
 
 func (t *Track) String() string {
 
-    return fmt.Sprintf("Track: %s by %s (%d)", t.Name, t.Artist, t.TrackID)
+    return fmt.Sprintf("Track: %s by %s [%v] %v of %v (%d)", t.Name, t.Artist, t.TotalTime, t.TrackNumber, t.TrackCount, t.TrackID)
+    // return fmt.Sprintf("Track: %s by %s (%d) [%v podcast, %v music video, %v movie, %v tv show]", t.Name, t.Artist, t.TrackID, t.Podcast, t.MusicVideo, t.Movie, t.TVShow)
 
 }
 

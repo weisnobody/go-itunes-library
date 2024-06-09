@@ -51,7 +51,7 @@ func resolveKeyOnStruct(item interface{}, key string, decoder *xml.Decoder) erro
     fieldName := strings.Replace(strings.Title(key), " ", "", -1)
     field := reflect.ValueOf(item).Elem().FieldByName(fieldName)
     if !field.IsValid() {
-        fmt.Printf("skipping missing field: %s\n", fieldName)
+        fmt.Printf("skipping unknown field: %s (%s)\n", fieldName, item)
         _ = decoder.Skip()
         return nil
     }
@@ -174,6 +174,9 @@ func decodeTracks(decoder *xml.Decoder, start xml.StartElement) ([]*Track, error
             if t.Name.Local == "dict" {
 
                 track := &Track{}
+                
+                // track.Podcast = false
+                
                 err := track.UnmarshalXML(decoder, t)
                 if err != nil {
                     return nil, err

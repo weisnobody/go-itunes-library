@@ -14,11 +14,13 @@ type Playlist struct {
     Visible              bool
     Protected            bool
     Name                 string
+    Description          string
     SmartInfo            []byte
     SmartCriteria        []byte
     ParentPersistentID   string
     DistinguishedKind    int
     PurchasedMusic       bool
+    Disliked             bool
     Music                bool
     Movies               bool
     TVShows              bool
