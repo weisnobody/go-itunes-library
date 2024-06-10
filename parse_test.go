@@ -3,7 +3,7 @@ package itunes_test
 import (
     "testing"
 
-    "github.com/rydrman/go-itunes-library"
+    "github.com/weisnobody/go-itunes-library"
 )
 
 func TestParseFile(t *testing.T) {

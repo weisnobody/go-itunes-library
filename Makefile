@@ -1,9 +1,5 @@
 
-REPO?=github.com/rydrman/itunes-to-spotify
-
-ldflags=\
-	-X main.clientID=$(SPOTIFY_CLIENT_ID) \
-	-X main.clientSecret=$(SPOTIFY_CLIENT_SECRET)
+REPO?=github.com/weisnobody/go-itunes-library
 
 test: build
 	go test
@@ -16,9 +12,5 @@ install:
 
 re-install:
 	go install -x -ldflags "$(ldflags)"
-
-run: install
-	itunes-to-spotify
-
 
 
