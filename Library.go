@@ -32,6 +32,13 @@ type Library struct {
     Albums              map[string]*Album
 }
 
+var CleanName = func(field string, name string) string { 
+    fmt.Println("Original")
+    
+    return name
+}
+
+
 // String returns a nice string representation of this Library
 func (lib *Library) String() string {
     return fmt.Sprintf("iTunes Library: %d Tracks, %d Playlists, [%d music, %d movies, %d tv, %d music videos, %d podcasts, %d total; %d Artists, %d Albums] (%s)",
@@ -144,7 +151,7 @@ func (lib *Library) sortTracksByID() {
             
             AlbumArtist := strings.TrimSpace(t.Artist)
             t.ArtistOriginal = AlbumArtist  // save original after trimming
-            AlbumArtist = cleanArtist(AlbumArtist)
+            AlbumArtist = CleanName("artist", AlbumArtist)
             t.Artist = AlbumArtist
 
             AlbumArtistSort := AlbumArtist
@@ -161,7 +168,7 @@ func (lib *Library) sortTracksByID() {
             if t.AlbumArtist != "" {
                 AlbumArtist = strings.TrimSpace(t.AlbumArtist)
                 t.AlbumArtistOriginal = AlbumArtist
-                AlbumArtist = cleanArtist(AlbumArtist)
+                AlbumArtist = CleanName("artist", AlbumArtist)
                 if t.SortAlbumArtist != "" {
                     //fmt.Println("Has SortAlbumArtist")
                     AlbumArtistSort = strings.TrimSpace(t.SortAlbumArtist)
@@ -280,7 +287,7 @@ func (lib *Library) sortTracksByID() {
             t.AlbumOriginal = t.Album
             AlbumName := strings.TrimSpace(t.Album)
             t.AlbumOriginal = AlbumName  // save Original after trimming
-            AlbumName = cleanAlbum(AlbumName)
+            AlbumName = CleanName("album", AlbumName)
             t.Album = AlbumName
 
             AlbumSort := strings.TrimSpace(t.Album)
@@ -289,7 +296,7 @@ func (lib *Library) sortTracksByID() {
             } else {
                 // TODO create AlbumSort
                 AlbumSort = strings.TrimSpace(t.Album)
-                AlbumSort = cleanAlbum(AlbumSort)
+                AlbumSort = CleanName("album", AlbumSort)
             }
             t.SortAlbum = AlbumSort
             
